@@ -52,6 +52,21 @@ int main()
 	
 	map.CreateForest();
 	map.Print();
-
+	
+	Console::SetCursorPosition(0, 22);
+	Console::WriteMessage(Console::Start);
+	
 	getchar();
+	map.SetFire();
+	map.Print();
+
+	while (true) {
+		map.Spread();
+
+		Console::SetCursorPosition(0, 22);
+		Console::WriteMessage(Console::Next);
+		getchar();
+		
+	}
+	
 }

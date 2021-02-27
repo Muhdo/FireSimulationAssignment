@@ -10,10 +10,10 @@ class Console {
 public:
 	enum Message {Start, Next, End};
 
-	void WriteMessage(Message msg);
-	void ChangeCursorVisibility(bool visibility);
-	void SetCursorPosition(int x, int y);
-	void EndSimulation(int y);
+	static void WriteMessage(Message msg);
+	static void ChangeCursorVisibility(bool visibility);
+	static void SetCursorPosition(int x, int y);
+	static void EndSimulation(int y);
 };
 
 #endif

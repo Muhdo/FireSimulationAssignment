@@ -23,11 +23,7 @@ public:
 	vector<Cell> CreateBoundary(vector<Cell> tempForest);
 	void CreateForest();
 	void Print();
-};
-
-
-class Grid {
-	
+	void SetFire();
 	void Spread();
 };
 #endif

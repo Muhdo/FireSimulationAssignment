@@ -51,20 +51,61 @@ void Forest::CreateForest() {
 }
 
 void Forest::Print() {
-	Console csl = Console(); //Gets Console class
-
 	//For each item in the array
 	for (int i = 0; i < forest.size(); ++i) {
 		Cell crtCell = forest[i]; //gets the current item
-		if (crtCell.currentState == Cell::Tree) { //Checks if it's a tree
-			csl.SetCursorPosition(crtCell.pos.x * 2, crtCell.pos.y); //Move to position of cell (X * 2 so the map looks like a square in the map)
+		if (crtCell.previousState == Cell::Empty && crtCell.currentState == Cell::Tree) {
+			Console::SetCursorPosition(crtCell.pos.x * 2, crtCell.pos.y); //Move to position of cell (X * 2 so the map looks like a square in the map)
 			cout << (char)6; //Prints ASCII character number 6 which is a spade
-		} else if (crtCell.currentState == Cell::Burning) {
-			csl.SetCursorPosition(crtCell.pos.x * 2, crtCell.pos.y); //Move to position of cell (X * 2 so the map looks like a square in the map)
-			cout << (char)15; //Prints ASCII character number 6 which is a spade
+		} else if (crtCell.previousState == Cell::Empty && crtCell.currentState == Cell::Burning) {
+			Console::SetCursorPosition(crtCell.pos.x * 2, crtCell.pos.y); //Move to position of cell (X * 2 so the map looks like a square in the map)
+			cout << (char)15; //Prints ASCII character number 15 which looks like flame
+		} else if (crtCell.previousState == Cell::Tree && crtCell.currentState == Cell::Burning) {
+			Console::SetCursorPosition(crtCell.pos.x * 2, crtCell.pos.y); //Move to position of cell (X * 2 so the map looks like a square in the map)
+			cout << (char)15; //Prints ASCII character number 15 which looks like flame
 		}
 	}
 }
 
-void Grid::Spread() {  }
+void Forest::SetFire() {
+	int arrayPos = -1;
+	
+	for (int i = 0; i < forest.size(); ++i) 
+		if (forest[i].pos.x == 10 && forest[i].pos.y == 10) {
+			arrayPos = i;
+			break;
+		}
+
+	if (arrayPos != -1) {
+		forest[arrayPos].ChangeCell(Cell::Burning);
+	} else {
+		forest.push_back(Cell(10, 10, Cell::Burning));
+	}
+}
+
+
+void Forest::Spread() {
+	for (int i = 0; i < forest.size(); ++i) {
+		if (forest[i].currentState == Cell::Burning && forest[i].currentState != Cell::Burning) {
+			Cell current = forest[i]; 
+
+			current.pos.y--;			
+			Cell north = find(forest.begin(), forest.end(), current);
+
+			current.pos.y = current.pos.y + 2;
+			Cell south = find(forest.begin(), forest.end(), current);
+
+			current.pos.y--;
+			current.pos.x--;
+			Cell west = find(forest.begin(), forest.end(), current);
+
+			current.pos.y = current.pos.x + 2;
+			Cell east = find(forest.begin(), forest.end(), current);
+
+			if (true) {
+				
+			}
+		}
+	}
+}
 

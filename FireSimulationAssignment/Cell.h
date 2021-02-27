@@ -22,17 +22,18 @@ public:
 class Cell {
 public:
 	enum Type { Empty = 0, Tree = 1, Burning = 2 };
-	Type firstState;
+	Type previousState;
 	Type currentState;
 	Position pos;
 	
 	Cell() {
-		firstState = Tree;
+		previousState = Empty;
 		currentState = Tree;
 		pos = Position();
 	};
 	
 	Cell(int x, int y);
+	Cell(int x, int y, Type type);
 
 	void ChangeCell(Type type);
 	
