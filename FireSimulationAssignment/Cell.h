@@ -3,6 +3,7 @@
 #define CELL_H
 
 #include <iostream>
+#include <string>
 
 using namespace std;
 
@@ -20,7 +21,15 @@ public:
 };
 
 class Cell {
+	
 public:
+	bool operator==(Position rhs) const {
+		string thisPos = to_string(this->pos.x) + ":" + to_string(this->pos.y);
+		string rhsPos = to_string(rhs.x) + ":" + to_string(rhs.y);
+	
+		return thisPos == rhsPos;
+	}
+
 	enum Type { Empty = 0, Tree = 1, Burning = 2 };
 	Type previousState;
 	Type currentState;

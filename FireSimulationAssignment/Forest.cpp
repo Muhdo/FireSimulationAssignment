@@ -44,7 +44,7 @@ void Forest::CreateForest() {
 	
 	for (int i = 0; i < 21; ++i) //Y axis
 		for (int j = 0; j < 21; ++j) //X axis
-			if ((int)forestRandom(gen) == 1) //generates number and if is a tree it will add
+			//if ((int)forestRandom(gen) == 1) //generates number and if is a tree it will add
 				tempForest.push_back(Cell(i, j)); //add tree to array
 					
 	forest = CreateBoundary(tempForest); //Creates boundary and saves forest
@@ -83,29 +83,61 @@ void Forest::SetFire() {
 	}
 }
 
+template <typename T, typename T2>
+pair<bool, int> findInVector(const std::vector<T>  & vecOfElements, const T2  & element)
+{
+    pair<bool, int > result;
+    // Find given element in vector
+    auto it = find(vecOfElements.begin(), vecOfElements.end(), element);
+    if (it != vecOfElements.end())
+    {
+        result.second = distance(vecOfElements.begin(), it);
+        result.first = true;
+    }
+    else
+    {
+        result.first = false;
+        result.second = -1;
+    }
+    return result;
+}
+
 
 void Forest::Spread() {
+	vector<Cell> tempForest = forest;
+	
 	for (int i = 0; i < forest.size(); ++i) {
-		if (forest[i].currentState == Cell::Burning && forest[i].currentState != Cell::Burning) {
+		if (forest[i].currentState == Cell::Burning && forest[i].previousState != Cell::Burning) {
 			Cell current = forest[i]; 
 
 			current.pos.y--;			
-			Cell north = find(forest.begin(), forest.end(), current);
+			pair<bool, int> north = findInVector(forest, current.pos);
 
-			current.pos.y = current.pos.y + 2;
-			Cell south = find(forest.begin(), forest.end(), current);
+			current.pos.y = current.pos.y + 2;			
+			pair<bool, int> south = findInVector(forest, current.pos);
 
 			current.pos.y--;
 			current.pos.x--;
-			Cell west = find(forest.begin(), forest.end(), current);
+			pair<bool, int> west = findInVector(forest, current.pos);
 
-			current.pos.y = current.pos.x + 2;
-			Cell east = find(forest.begin(), forest.end(), current);
+			current.pos.x = current.pos.x + 2;
+			pair<bool, int> east = findInVector(forest, current.pos);
 
-			if (true) {
-				
+			if (north.first == true) {
+				tempForest[north.second].ChangeCell(Cell::Burning);
+			}
+			if (south.first == true) {
+				tempForest[south.second].ChangeCell(Cell::Burning);
+			}
+			if (west.first == true) {
+				tempForest[west.second].ChangeCell(Cell::Burning);
+			}
+			if (east.first == true) {
+				tempForest[east.second].ChangeCell(Cell::Burning);
 			}
 		}
 	}
+
+	forest = tempForest;
 }
 

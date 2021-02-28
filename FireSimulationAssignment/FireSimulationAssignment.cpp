@@ -61,12 +61,12 @@ int main()
 	map.Print();
 
 	while (true) {
-		map.Spread();
-
 		Console::SetCursorPosition(0, 22);
 		Console::WriteMessage(Console::Next);
 		getchar();
 		
+		map.Spread();
+		map.Print();
 	}
 	
 }
