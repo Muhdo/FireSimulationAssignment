@@ -67,6 +67,7 @@ int main()
 		
 		map.Spread();
 		map.Print();
+
 	}
 	
 }

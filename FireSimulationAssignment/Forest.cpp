@@ -51,6 +51,7 @@ void Forest::CreateForest() {
 }
 
 void Forest::Print() {
+	//system("cls");
 	//For each item in the array
 	for (int i = 0; i < forest.size(); ++i) {
 		Cell crtCell = forest[i]; //gets the current item
@@ -70,17 +71,20 @@ void Forest::Print() {
 void Forest::SetFire() {
 	int arrayPos = -1;
 	
-	for (int i = 0; i < forest.size(); ++i) 
-		if (forest[i].pos.x == 10 && forest[i].pos.y == 10) {
-			arrayPos = i;
-			break;
-		}
+	for (int i = 0; i < forest.size(); ++i) {
+		if (forest[i].pos.x == 10 && forest[i].pos.y == 10)
+			arrayPos = i;	
 
-	if (arrayPos != -1) {
-		forest[arrayPos].ChangeCell(Cell::Burning);
-	} else {
-		forest.push_back(Cell(10, 10, Cell::Burning));
+		if (forest[i].currentState == Cell::Tree && forest[i].previousState == Cell::Empty) {
+			forest[i].ChangeCell(Cell::Tree);
+		}
 	}
+
+	if (arrayPos != -1)
+		forest[arrayPos].ChangeCell(Cell::Burning);
+	else 
+		forest.push_back(Cell(10, 10, Cell::Burning));
+	
 }
 
 template <typename T, typename T2>
@@ -106,38 +110,48 @@ pair<bool, int> findInVector(const std::vector<T>  & vecOfElements, const T2  & 
 void Forest::Spread() {
 	vector<Cell> tempForest = forest;
 	
-	for (int i = 0; i < forest.size(); ++i) {
-		if (forest[i].currentState == Cell::Burning && forest[i].previousState != Cell::Burning) {
+	for (int i = 0; i < forest.size(); ++i) {	
+		if (forest[i].currentState == Cell::Burning) {
+			tempForest[i].ChangeCell(Cell::Burning);
+
 			Cell current = forest[i]; 
 
 			current.pos.y--;			
 			pair<bool, int> north = findInVector(forest, current.pos);
 
-			current.pos.y = current.pos.y + 2;			
+			current.pos.y += 2;			
 			pair<bool, int> south = findInVector(forest, current.pos);
 
 			current.pos.y--;
 			current.pos.x--;
 			pair<bool, int> west = findInVector(forest, current.pos);
 
-			current.pos.x = current.pos.x + 2;
+			current.pos.x += 2;
 			pair<bool, int> east = findInVector(forest, current.pos);
 
-			if (north.first == true) {
+			if (north.first == true && tempForest[north.second].currentState == Cell::Tree) {
 				tempForest[north.second].ChangeCell(Cell::Burning);
 			}
-			if (south.first == true) {
+			if (south.first == true && tempForest[south.second].currentState == Cell::Tree) {
 				tempForest[south.second].ChangeCell(Cell::Burning);
 			}
-			if (west.first == true) {
+			if (west.first == true && tempForest[west.second].currentState == Cell::Tree) {
 				tempForest[west.second].ChangeCell(Cell::Burning);
 			}
-			if (east.first == true) {
+			if (east.first == true && tempForest[east.second].currentState == Cell::Tree) {
 				tempForest[east.second].ChangeCell(Cell::Burning);
 			}
 		}
 	}
 
 	forest = tempForest;
+
+	vector<Cell>::iterator it = forest.begin();
+
+	while (it != forest.end())
+		if (it->previousState == Cell::Burning && it->currentState == Cell::Burning)
+			it = forest.erase(it);
+		else ++it;
+		
 }
 
