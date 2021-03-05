@@ -8,6 +8,7 @@ using namespace std;
 
 class Console {
 public:
+
 	enum Message {Start, Next, End};
 
 	static void WriteMessage(Message msg);
