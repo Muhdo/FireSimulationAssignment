@@ -21,3 +21,15 @@ void Cell::ChangeCell(Type type) {
 	previousState = currentState;
 	currentState = type;
 }
+
+Cell::Type Cell::GetPreviousState() {
+	return previousState;
+}
+
+Cell::Type Cell::GetCurrentState() {
+	return currentState;
+}
+
+Position Cell::GetPosition() {
+	return pos;
+}

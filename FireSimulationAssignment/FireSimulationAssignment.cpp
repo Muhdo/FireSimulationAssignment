@@ -7,29 +7,38 @@
 using namespace std;
 
 int main() {
+	Console cns;
+
+	cns.ChangeCursorVisibility(false);
 	while (true) {
 		Forest map = Forest();
+
+		map.CreateBoundary();
 		
 		map.CreateForest();
 		map.Print();
-		
-		Console::SetCursorPosition(0, 22);
-		Console::WriteMessage(Console::Start);
+
+		cns.ChangeCursorColor(15);
+		cns.SetCursorPosition(0, 23);
+		cns.WriteMessage(Console::Start);
 		
 		getchar();
 		map.SetFire();
 		map.Print();
 
-		while (!map.simEnded) {	
-			Console::SetCursorPosition(0, 22);
-			Console::WriteMessage(Console::Next);
+		cns.ChangeCursorColor(15);
+		cns.SetCursorPosition(0, 23);
+		cns.WriteMessage(Console::Next);
+
+		while (!map.SimEnded()) {	
 			getchar();
 			
 			map.Spread();
 			map.Print();
 		}
-		
-		Console::EndSimulation(22);
+
+		cns.ChangeCursorColor(15);
+		cns.EndSimulation(23);
 		getchar();
 		system("cls");
 	}

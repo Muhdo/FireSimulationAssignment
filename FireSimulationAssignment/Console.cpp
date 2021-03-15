@@ -7,38 +7,44 @@
 
 using namespace std;
 
+HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+
 void Console::WriteMessage(Message msg) {
-	cout << "------------------------------------------" << endl;
+	cout << "-------------------------------------------" << endl;
 	
 	switch (msg) {
-		case Start: cout << "Press ENTER to set fire to the first tree." << endl; break;
-		case Next: cout <<  "Press ENTER to move to the next iteration." << endl; break;
-		case End: cout <<   "Simulation ended, press ENTER to restart. " << endl; break;
+		case Start: cout << " Press ENTER to set fire to the first tree." << endl; break;
+		case Next: cout <<  " Press ENTER to move to the next iteration." << endl; break;
+		case End: cout <<   " Simulation ended, press ENTER to restart. " << endl; break;
 	}
 
-	cout << "------------------------------------------" << endl;
+	cout << "-------------------------------------------" << endl;
 }
 
 void Console::ChangeCursorVisibility(bool visibility) {
-	HANDLE out = GetStdHandle(STD_OUTPUT_HANDLE);
-
     CONSOLE_CURSOR_INFO cursorInfo;
 
-    GetConsoleCursorInfo(out, &cursorInfo);
+    GetConsoleCursorInfo(hConsole, &cursorInfo);
     cursorInfo.bVisible = visibility; //Change visibility
-    SetConsoleCursorInfo(out, &cursorInfo);
+    SetConsoleCursorInfo(hConsole, &cursorInfo);
 }
 
+void Console::ChangeCursorColor(int color) {
+	//10 = Green
+	//14 = Yellow
+	//15 = White
+	
+	SetConsoleTextAttribute(hConsole, color);
+}
+
+
 void Console::SetCursorPosition(int x, int y) {
-	//Initialize objects for cursor manipulation
-	HANDLE hStdout;
 	COORD destCoord;
-	hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
 
 	//Position cursor at start of window
 	destCoord.X = x;
 	destCoord.Y = y;
-	SetConsoleCursorPosition(hStdout, destCoord); //Move cursor to the location
+	SetConsoleCursorPosition(hConsole, destCoord); //Move cursor to the location
 }
 
 void Console::EndSimulation(int y) {

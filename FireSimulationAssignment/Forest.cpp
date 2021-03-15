@@ -2,36 +2,37 @@
 #include "Forest.h"
 
 #include <random>
+#include <Windows.h>
+
 
 #include "Console.h"
 
+Console* cns;
 
-vector<Cell> Forest::CreateBoundary(vector<Cell> tempForest) {
-	//Random generator stuff
-	random_device rd;
-	mt19937 gen(rd());
-	uniform_real_distribution<> positionRandom(1, 21); //Random between 1 and 20 (Generates a number between the second and last but one cell of the forest)
-	uniform_real_distribution<> orientationRandom(0, 2); //Random between 0 and 1 (0 = Horizontal, 1 = Vertical)
+bool Forest::SimEnded() {
+	return simEnded;
+}
 
-	int boundary = positionRandom(gen); //Position of boundary
-	int orientation = orientationRandom(gen); //Orientation of boundary
+void Forest::CreateBoundary() {
+	cns->ChangeCursorColor(15);
+	
+	cout << (char)201;
+	for(int i = 0; i < 41; ++i) //21 * 2 - 1 --- The 21 cells, the space between each cell and one less in the end
+		cout << (char)205;
+	cout << (char)187;
 
-	//Selects the orientation
-	if (orientation == 0) { //Horizontal boundary
-		for (int i = 0; i < tempForest.size(); ++i) { //Goes through every item in the vector
-			if (tempForest[i].pos.y == boundary) { //Checks the y position of the item
-				tempForest.erase(tempForest.begin() + i); //Deletes the item if is in the Y position of boundary
-			}
-		}
-	} else if (orientation == 1) { //Vertical boundary
-		for (int i = 0; i < tempForest.size(); ++i) { //Goes through every item in the vector
-			if (tempForest[i].pos.x == boundary) { //Checks the y position of the item
-				tempForest.erase(tempForest.begin() + i--); //Deletes the item if is in the Y position of boundary
-			}
-		}
+	for (int i = 0; i < 21; ++i) {
+		cns->SetCursorPosition(0, i + 1);
+		cout << (char)186;
+		cns->SetCursorPosition(42, i + 1);
+		cout << (char)186;
 	}
 
-	return tempForest;
+	cns->SetCursorPosition(0, 22);
+	cout << (char)200;
+	for(int i = 0; i < 41; ++i) //21 * 2 - 1 --- The 21 cells, the space between each cell and one less in the end
+		cout << (char)205;
+	cout << (char)188;
 }
 
 void Forest::CreateForest() {
@@ -59,31 +60,37 @@ void Forest::CreateForest() {
 
 	vector<Cell> tempForest = vector<Cell>(); //Creates temporary forest
 	
-	for (int i = 0; i < 21; ++i) //Y axis
-		for (int j = 0; j < 21; ++j) //X axis
+	for (int y = 0; y < 21; ++y) //Y axis
+		for (int x = 0; x < 21; ++x) //X axis
 			if ((int)forestRandom(gen) == 1) //Generates number and if is a tree it will add
-				tempForest.push_back(Cell(i, j)); //Add tree to array
+				tempForest.push_back(Cell(x, y)); //Add tree to array
 					
-	forest = CreateBoundary(tempForest); //Creates boundary and saves forest
+	forest = tempForest; //Saves forest
 }
 
 void Forest::Print() {
+	//Clears the screen so old fires don't show
+	for (int y = 1; y < 22; y++) {
+		cns->SetCursorPosition(1, y);
+		cout << "                                         ";
+	}
+
 	//For each item in the array
 	for (int i = 0; i < forest.size(); ++i) {
-		Cell crtCell = forest[i]; //gets the current item
-		if (crtCell.previousState == Cell::Empty && crtCell.currentState == Cell::Tree) {
-			Console::SetCursorPosition(crtCell.pos.x * 2, crtCell.pos.y); //Move to position of cell (X * 2 so the map looks like a square in the map)
+		Cell crtCell = forest[i]; //Gets the current item
+		
+		//(X * 2 so the map looks like a square in the map)
+		if (crtCell.GetCurrentState() == Cell::Tree) {
+			cns->SetCursorPosition(crtCell.GetPosition().x * 2 + 1, crtCell.GetPosition().y + 1); //Move to position of cell
+			cns->ChangeCursorColor(10);
 			cout << (char)6; //Prints ASCII character number 6 which is a spade
-		} else if (crtCell.previousState == Cell::Empty && crtCell.currentState == Cell::Burning) {
-			Console::SetCursorPosition(crtCell.pos.x * 2, crtCell.pos.y); //Move to position of cell (X * 2 so the map looks like a square in the map)
-			cout << (char)15; //Prints ASCII character number 15 which looks like flame
-		} else if (crtCell.previousState == Cell::Tree && crtCell.currentState == Cell::Burning) {
-			Console::SetCursorPosition(crtCell.pos.x * 2, crtCell.pos.y); //Move to position of cell (X * 2 so the map looks like a square in the map)
+		} else if (crtCell.GetCurrentState() == Cell::Burning) {
+			cns->SetCursorPosition(crtCell.GetPosition().x * 2 + 1, crtCell.GetPosition().y + 1); //Move to position of cell
+			cns->ChangeCursorColor(12);
 			cout << (char)15; //Prints ASCII character number 15 which looks like flame
 		}
 	}
 }
-
 
 //Search in vector and return index
 template <typename T, typename T2>
@@ -120,7 +127,7 @@ void Forest::SetFire() {
 	
 	//For each cell in the forest
 	for (Cell cell : forest)
-		if (cell.currentState == Cell::Tree) //Checks if its a tree
+		if (cell.GetCurrentState() == Cell::Tree) //Checks if its a tree
 			cell.ChangeCell(Cell::Tree); //Moves one Iteration forward
 
 	if (arrayPos.first == true) //If was found
@@ -158,7 +165,7 @@ void Forest::Spread() {
 	
 	//For each cell in the forest
 	for (int i = 0; i < forest.size(); ++i) {
-		if (forest[i].currentState == Cell::Burning) { //Checks if the current cell is burning
+		if (forest[i].GetCurrentState() == Cell::Burning) { //Checks if the current cell is burning
 			bool changeIteration = true; //To know if the current cell should move to the next iteration
 
 			Cell current = forest[i]; //Data about the current cell
@@ -179,43 +186,45 @@ void Forest::Spread() {
 			 *	   East: X+1, Y
 			 */
 
+
+			Position pos = current.GetPosition();
 			//Get North Cell from Current
-			current.pos.y--;			
-			pair<bool, int> north = findInVector(forest, current.pos);
+			pos.y--;
+			pair<bool, int> north = findInVector(forest, pos);
 
 			//Get South Cell from Current
-			current.pos.y += 2;			
-			pair<bool, int> south = findInVector(forest, current.pos);
+			pos.y += 2;			
+			pair<bool, int> south = findInVector(forest, pos);
 
 			//Get West Cell from Current
-			current.pos.y--;
-			current.pos.x--;
-			pair<bool, int> west = findInVector(forest, current.pos);
+			pos.y--;
+			pos.x--;
+			pair<bool, int> west = findInVector(forest, pos);
 
 			//Get East Cell from Current
-			current.pos.x += 2;
-			pair<bool, int> east = findInVector(forest, current.pos);
+			pos.x += 2;
+			pair<bool, int> east = findInVector(forest, pos);
 
 			if (north.first || south.first || west.first || east.first) 
 				simEnded = false;
 			
 			//Checks if any of those cells are trees and make it burn with 50% chance
-			if (north.first == true && tempForest[north.second].currentState == Cell::Tree)
+			if (north.first == true && tempForest[north.second].GetCurrentState() == Cell::Tree)
 				if ((int)burnRandom(gen) == 1) //Burn
 					tempForest[north.second].ChangeCell(Cell::Burning);	
 				else changeIteration = false; //Don't Burn and don't change iteration
 				
-			if (south.first == true && tempForest[south.second].currentState == Cell::Tree)
+			if (south.first == true && tempForest[south.second].GetCurrentState() == Cell::Tree)
 				if ((int)burnRandom(gen) == 1) //Burn
 					tempForest[south.second].ChangeCell(Cell::Burning);
 				else changeIteration = false; //Don't Burn and don't change iteration
 			
-			if (west.first == true && tempForest[west.second].currentState == Cell::Tree)
+			if (west.first == true && tempForest[west.second].GetCurrentState() == Cell::Tree)
 				if ((int)burnRandom(gen) == 1) //Burn
 					tempForest[west.second].ChangeCell(Cell::Burning);
 				else changeIteration = false; //Don't Burn and don't change iteration
 			
-			if (east.first == true && tempForest[east.second].currentState == Cell::Tree)
+			if (east.first == true && tempForest[east.second].GetCurrentState() == Cell::Tree)
 				if ((int)burnRandom(gen) == 1) //Burn
 					tempForest[east.second].ChangeCell(Cell::Burning);
 				else changeIteration = false; //Don't Burn and don't change iteration	
@@ -226,14 +235,39 @@ void Forest::Spread() {
 	}
 	
 	forest = tempForest; //Copies temporary forest to main forest
+	
+	SpawnNewTrees();
 
 	vector<Cell>::iterator it = forest.begin(); //Forest iterator
 
 	//Goes through every cell in the forest
 	while (it != forest.end())
-		if (it->previousState == Cell::Burning && it->currentState == Cell::Burning) //Checks if is burning at 2 iterations
+		if (it->GetPreviousState() == Cell::Burning && it->GetCurrentState() == Cell::Burning) //Checks if is burning at 2 iterations
 			it = forest.erase(it); //Deletes cell
 		else ++it; //Moves to next cell
 		
+}
+
+void Forest::SpawnNewTrees() {
+	//Random generator stuff
+	random_device rd;
+	mt19937 gen(rd());
+	uniform_real_distribution<> probabilityRandom(0, 1.1); //Probability of current cell to spawn a tree (values goes between (double)0.0 and (double)1.0(9))
+	uniform_real_distribution<> amountRandom(0, 21 * 21 - forest.size()); //Random amount between the available spaces
+	uniform_real_distribution<> posRandom(0, 21); //Random position in the forest
+
+	//For the amount of tries available to spawn a tree
+	for (int i = 0; i < (int)amountRandom(gen); i++) {
+		//Generates a random position (available or not)
+		int x = posRandom(gen);
+		int y = posRandom(gen);
+
+		//Checks if its available
+		pair<bool, int> place = findInVector(forest, Position(x, y));
+
+		//If it's available and the probability to spawn a tree is set to 1
+		if (!place.first && (int)probabilityRandom(gen) == 1)
+			forest.push_back(Cell(x, y)); //Spawns a tree
+	}
 }
 
