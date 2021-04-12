@@ -149,34 +149,39 @@ bool Forest::BurnCalculation(char dir) {
 	mt19937 gen(rd());
 	uniform_real_distribution<> burnVRandom(0, fabs(windDirection[1] + 1)); //Does the tree burn? for vertical axis
 	uniform_real_distribution<> burnHRandom(0, fabs(windDirection[0] + 1)); //Does the tree burn? for horizontal axis
+	uniform_real_distribution<> burnRandom(0, 1); //Does the tree burn? no axis
 
 	//Checks the direction its trying to burn and if the wind is blowing in the same direction
 	if (dir == 'N' && windDirection[1] > 0)
 		//Random for the tree to burn or not
-		if (burnVRandom(gen) > 0)
+		if (burnVRandom(gen) > 0.5)
 			return true;
 		else
 			return false;
 	else if (dir == 'S' && windDirection[1] < 0)
 		//Random for the tree to burn or not
-		if (burnVRandom(gen) > 0)
+		if (burnVRandom(gen) > 0.5)
 			return true;
 		else
 			return false;
 	else if (dir == 'W' && windDirection[0] < 0)
 		//Random for the tree to burn or not
-		if (burnHRandom(gen) > 0)
+		if (burnHRandom(gen) > 0.5)
 			return true;
 		else
 			return false;
 	else if (dir == 'E' && windDirection[0] > 0)
 		//Random for the tree to burn or not
-		if (burnHRandom(gen) > 0)
+		if (burnHRandom(gen) > 0.5)
 			return true;
 		else
 			return false;
 
-	return false;
+	//Random for the tree to burn or not
+	if (burnRandom(gen) > 0.5)
+		return true;
+	else
+		return false;
 }
 
 void Forest::Spread() {
