@@ -1,9 +1,7 @@
 ﻿#include <iostream>
 #include <Windows.h>
-#include <vector>
 
 #include "Console.h"
-#include "Cell.h"
 
 using namespace std;
 

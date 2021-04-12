@@ -4,7 +4,6 @@
 #include <random>
 #include <Windows.h>
 
-
 #include "Console.h"
 
 Console* cns;
@@ -82,11 +81,17 @@ void Forest::Print() {
 		//(X * 2 so the map looks like a square in the map)
 		if (crtCell.GetCurrentState() == Cell::Tree) {
 			cns->SetCursorPosition(crtCell.GetPosition().x * 2 + 1, crtCell.GetPosition().y + 1); //Move to position of cell
-			cns->ChangeCursorColor(10);
+			if (!simEnded)
+				cns->ChangeCursorColor(10);
+			else
+				cns->ChangeCursorColor(15);
 			cout << (char)6; //Prints ASCII character number 6 which is a spade
 		} else if (crtCell.GetCurrentState() == Cell::Burning) {
 			cns->SetCursorPosition(crtCell.GetPosition().x * 2 + 1, crtCell.GetPosition().y + 1); //Move to position of cell
-			cns->ChangeCursorColor(12);
+			if (!simEnded)
+				cns->ChangeCursorColor(12);
+			else
+				cns->ChangeCursorColor(15);
 			cout << (char)15; //Prints ASCII character number 15 which looks like flame
 		}
 	}
@@ -134,6 +139,44 @@ void Forest::SetFire() {
 		forest[arrayPos.second].ChangeCell(Cell::Burning); //Makes the tree burn
 	else //If wasn't found
 		forest.push_back(Cell(10, 10, Cell::Burning)); //Creates a cell in the middle
+
+	WindSimulation();
+}
+
+bool Forest::BurnCalculation(char dir) {
+	//Random generator stuff
+	random_device rd;
+	mt19937 gen(rd());
+	uniform_real_distribution<> burnVRandom(0, fabs(windDirection[1] + 1)); //Does the tree burn? for vertical axis
+	uniform_real_distribution<> burnHRandom(0, fabs(windDirection[0] + 1)); //Does the tree burn? for horizontal axis
+
+	//Checks the direction its trying to burn and if the wind is blowing in the same direction
+	if (dir == 'N' && windDirection[1] > 0)
+		//Random for the tree to burn or not
+		if (burnVRandom(gen) > 0)
+			return true;
+		else
+			return false;
+	else if (dir == 'S' && windDirection[1] < 0)
+		//Random for the tree to burn or not
+		if (burnVRandom(gen) > 0)
+			return true;
+		else
+			return false;
+	else if (dir == 'W' && windDirection[0] < 0)
+		//Random for the tree to burn or not
+		if (burnHRandom(gen) > 0)
+			return true;
+		else
+			return false;
+	else if (dir == 'E' && windDirection[0] > 0)
+		//Random for the tree to burn or not
+		if (burnHRandom(gen) > 0)
+			return true;
+		else
+			return false;
+
+	return false;
 }
 
 void Forest::Spread() {
@@ -210,22 +253,22 @@ void Forest::Spread() {
 			
 			//Checks if any of those cells are trees and make it burn with 50% chance
 			if (north.first == true && tempForest[north.second].GetCurrentState() == Cell::Tree)
-				if ((int)burnRandom(gen) == 1) //Burn
+				if (BurnCalculation('N')) //Burn
 					tempForest[north.second].ChangeCell(Cell::Burning);	
 				else changeIteration = false; //Don't Burn and don't change iteration
 				
 			if (south.first == true && tempForest[south.second].GetCurrentState() == Cell::Tree)
-				if ((int)burnRandom(gen) == 1) //Burn
+				if (BurnCalculation('S')) //Burn
 					tempForest[south.second].ChangeCell(Cell::Burning);
 				else changeIteration = false; //Don't Burn and don't change iteration
 			
 			if (west.first == true && tempForest[west.second].GetCurrentState() == Cell::Tree)
-				if ((int)burnRandom(gen) == 1) //Burn
+				if (BurnCalculation('W')) //Burn
 					tempForest[west.second].ChangeCell(Cell::Burning);
 				else changeIteration = false; //Don't Burn and don't change iteration
 			
 			if (east.first == true && tempForest[east.second].GetCurrentState() == Cell::Tree)
-				if ((int)burnRandom(gen) == 1) //Burn
+				if (BurnCalculation('E')) //Burn
 					tempForest[east.second].ChangeCell(Cell::Burning);
 				else changeIteration = false; //Don't Burn and don't change iteration	
 
@@ -235,7 +278,8 @@ void Forest::Spread() {
 	}
 	
 	forest = tempForest; //Copies temporary forest to main forest
-	
+
+	WindSimulation();
 	SpawnNewTrees();
 
 	vector<Cell>::iterator it = forest.begin(); //Forest iterator
@@ -271,3 +315,28 @@ void Forest::SpawnNewTrees() {
 	}
 }
 
+void Forest::WindSimulation() {
+	//Random generator stuff
+	random_device rd;
+	mt19937 gen(rd());
+	uniform_real_distribution<> dirRandom(-1, 1); //amount to change the wind
+	
+	windDirection[0] = dirRandom(gen);
+	windDirection[1] = dirRandom(gen);
+
+	cns->SetCursorPosition(0, 29);
+	cns->ChangeCursorColor(15);
+	cout << "                                 ";
+	cns->SetCursorPosition(0, 27);
+	cout << "Next Iteration" << endl << "--------------" << endl;
+	
+	if (windDirection[1] > 0)
+		cout << "North " << floor((windDirection[1] * 10) / 0.01) * 0.01 << "Km/h  ";
+	else if (windDirection[1] < 0)
+		cout << "South " << floor((windDirection[1] * -10) / 0.01) * 0.01 << "Km/h  ";
+	
+	if (windDirection[0] > 0)
+		cout << "East " << floor((windDirection[0] * 10) / 0.01) * 0.01 << "Km/h";
+	else if (windDirection[0] < 0)
+		cout << "West " << floor((windDirection[0] * -10) / 0.01) * 0.01 << "Km/h";
+}
